@@ -347,6 +347,17 @@ cd Personal_AI_Infrastructure/Releases/v4.0.3
 cp -r .claude ~/ && cd ~/.claude && bash install.sh
 ```
 
+```powershell
+# Clone the repo
+git clone https://github.com/danielmiessler/Personal_AI_Infrastructure.git
+Set-Location Personal_AI_Infrastructure\\Releases\\v4.0.3
+
+# Copy the release and run the installer (Windows, no WSL)
+Copy-Item .claude -Destination $env:USERPROFILE -Recurse -Force
+Set-Location \"$env:USERPROFILE\\.claude\"
+powershell -ExecutionPolicy Bypass -File .\\install.ps1
+```
+
 **The installer will:**
 - Detect your system and install prerequisites (Bun, Git, Claude Code)
 - Ask for your name, AI assistant name, timezone, and temperature unit preference
@@ -355,6 +366,14 @@ cp -r .claude ~/ && cd ~/.claude && bash install.sh
 - Configure your shell alias and verify the installation
 
 **After installation:** Run `source ~/.zshrc && pai` to launch PAI.
+On Windows PowerShell, open a new terminal (or run `. $PROFILE`) and then run `pai`.
+
+> [!NOTE]
+> **Windows Execution Policy:** If you get a "scripts are disabled" error, run this once:
+> ```powershell
+> Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+> ```
+> This allows locally-created scripts to run while still blocking unsigned remote scripts.
 
 ### Upgrading from a Previous Version
 
@@ -372,6 +391,23 @@ cd ~/.claude && bash install.sh
 
 # 4. Rebuild your CLAUDE.md
 bun ~/.claude/PAI/Tools/BuildCLAUDE.ts
+```
+
+```powershell
+# 1. Back up your current installation
+Copy-Item \"$env:USERPROFILE\\.claude\" -Destination \"$env:USERPROFILE\\.claude-backup-$(Get-Date -Format yyyyMMdd)\" -Recurse -Force
+
+# 2. Clone and copy the new release over your installation
+git clone https://github.com/danielmiessler/Personal_AI_Infrastructure.git
+Set-Location Personal_AI_Infrastructure\\Releases\\v4.0.3
+Copy-Item .claude -Destination $env:USERPROFILE -Recurse -Force
+
+# 3. Run the installer
+Set-Location \"$env:USERPROFILE\\.claude\"
+powershell -ExecutionPolicy Bypass -File .\\install.ps1
+
+# 4. Rebuild your CLAUDE.md
+bun \"$env:USERPROFILE\\.claude\\PAI\\Tools\\BuildCLAUDE.ts\"
 ```
 
 > [!TIP]

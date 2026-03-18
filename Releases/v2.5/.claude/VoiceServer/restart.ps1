@@ -1,4 +1,8 @@
-$ErrorActionPreference = 'Stop'
-Write-Host "Windows placeholder for restart.sh." -ForegroundColor Yellow
-Write-Host "This script is macOS/Linux-specific in legacy releases; use the newer Windows scripts where available." -ForegroundColor Yellow
-exit 0
+# Restart the Voice Server (Windows)
+
+$SCRIPT_DIR = Split-Path -Parent $MyInvocation.MyCommand.Definition
+
+Write-Host "Restarting voice server..."
+& (Join-Path $SCRIPT_DIR "stop.ps1")
+Start-Sleep -Seconds 2
+& (Join-Path $SCRIPT_DIR "start.ps1")

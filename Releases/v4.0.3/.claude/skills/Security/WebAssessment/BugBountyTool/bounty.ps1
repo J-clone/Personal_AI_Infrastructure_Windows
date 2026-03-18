@@ -1,13 +1,65 @@
-param([Parameter(ValueFromRemainingArguments=$true)][string[]]$Args)
+# Bug Bounty Tracker CLI wrapper
+
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-if ($Args.Count -eq 0) { $Args = @('help') }
-$cmd = $Args[0]
-$rest = if($Args.Count -gt 1){ $Args[1..($Args.Count-1)] } else { @() }
-switch($cmd){
-  {$_ -in @('init','initialize')} { & bun run (Join-Path $ScriptDir 'src/init.ts'); break }
-  'update' { & bun run (Join-Path $ScriptDir 'src/update.ts'); break }
-  {$_ -in @('show','list')} { & bun run (Join-Path $ScriptDir 'src/show.ts') @rest; break }
-  'search' { & bun run (Join-Path $ScriptDir 'src/show.ts') '--search' @rest; break }
-  {$_ -in @('recon','initiate-recon')} { & bun run (Join-Path $ScriptDir 'src/recon.ts') @rest; break }
-  default { Write-Host 'Usage: bounty.ps1 <init|update|show|search|recon>' }
+
+switch ($args[0]) {
+    { $_ -in "init", "initialize" } {
+        bun run "$ScriptDir\src\init.ts"
+    }
+
+    "update" {
+        bun run "$ScriptDir\src\update.ts"
+    }
+
+    { $_ -in "show", "list" } {
+        $remaining = $args[1..($args.Length - 1)]
+        bun run "$ScriptDir\src\show.ts" @remaining
+    }
+
+    "search" {
+        $remaining = $args[1..($args.Length - 1)]
+        bun run "$ScriptDir\src\show.ts" --search @remaining
+    }
+
+    { $_ -in "recon", "initiate-recon" } {
+        $remaining = $args[1..($args.Length - 1)]
+        bun run "$ScriptDir\src\recon.ts" @remaining
+    }
+
+    { $_ -in "help", "--help", "-h" } {
+        @"
+Bug Bounty Tracker - Track new bug bounty programs automatically
+
+USAGE:
+  bounty.ps1 <command> [options]
+
+COMMANDS:
+  init              Initialize the tracker (first-time setup)
+  update            Check for new programs and updates
+  show [options]    Show recent discoveries
+  search <query>    Search for programs by name/platform
+  recon <number>    Initiate reconnaissance on program #
+  help              Show this help message
+
+SHOW OPTIONS:
+  --last <time>     Show programs from last X time (e.g., 24h, 7d, 30d)
+  --all             Show all cached programs
+  --search <query>  Search by name or platform
+
+EXAMPLES:
+  bounty.ps1 init                    # First-time setup
+  bounty.ps1 update                  # Check for new programs
+  bounty.ps1 show                    # Show last 24 hours
+  bounty.ps1 show --last 7d          # Show last 7 days
+  bounty.ps1 show --all              # Show all programs
+  bounty.ps1 search "stripe"         # Search for Stripe programs
+  bounty.ps1 recon 1                 # Start recon on program #1
+"@
+    }
+
+    default {
+        Write-Host "Unknown command: $($args[0])"
+        Write-Host "Run 'bounty.ps1 help' for usage information"
+        exit 1
+    }
 }

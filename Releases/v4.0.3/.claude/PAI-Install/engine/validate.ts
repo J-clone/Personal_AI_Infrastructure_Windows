@@ -26,9 +26,7 @@ async function checkVoiceServerHealth(): Promise<boolean> {
  */
 export async function runValidation(state: InstallState): Promise<ValidationCheck[]> {
   const paiDir = state.detection?.paiDir || join(homedir(), ".claude");
-  const configDir = state.detection?.configDir || (process.platform === "win32"
-    ? join(homedir(), ".claude", "config", "PAI")
-    : join(homedir(), ".config", "PAI"));
+  const configDir = state.detection?.configDir || join(homedir(), ".config", "PAI");
   const checks: ValidationCheck[] = [];
 
   // 1. settings.json exists and is valid JSON
@@ -169,16 +167,31 @@ export async function runValidation(state: InstallState): Promise<ValidationChec
     critical: false,
   });
 
-  // 8. Shell alias/profile configured
+  // 8. Shell alias configured (cross-platform)
+  const isWindows = process.platform === "win32";
   let aliasConfigured = false;
-  if (process.platform === "win32") {
-    const profilePath = join(homedir(), "Documents", "PowerShell", "Microsoft.PowerShell_profile.ps1");
-    if (existsSync(profilePath)) {
-      try {
-        const profile = readFileSync(profilePath, "utf-8");
-        aliasConfigured = profile.includes("# PAI alias") && profile.includes("function pai");
-      } catch {}
+
+  if (isWindows) {
+    // Check PowerShell profile for PAI function/alias
+    const psProfilePaths = [
+      join(homedir(), "Documents", "PowerShell", "Microsoft.PowerShell_profile.ps1"),
+      join(homedir(), "Documents", "WindowsPowerShell", "Microsoft.PowerShell_profile.ps1"),
+    ];
+    for (const profilePath of psProfilePaths) {
+      if (existsSync(profilePath)) {
+        try {
+          const profileContent = readFileSync(profilePath, "utf-8");
+          aliasConfigured = profileContent.includes("# PAI alias") || profileContent.includes("function pai");
+          if (aliasConfigured) break;
+        } catch {}
+      }
     }
+    checks.push({
+      name: "Shell alias (pai)",
+      passed: aliasConfigured,
+      detail: aliasConfigured ? "Configured in PowerShell profile" : "Not found — add 'function pai' to your PowerShell $PROFILE",
+      critical: true,
+    });
   } else {
     const zshrcPath = join(homedir(), ".zshrc");
     if (existsSync(zshrcPath)) {
@@ -187,16 +200,13 @@ export async function runValidation(state: InstallState): Promise<ValidationChec
         aliasConfigured = zshContent.includes("# PAI alias") && zshContent.includes("alias pai=");
       } catch {}
     }
+    checks.push({
+      name: "Shell alias (pai)",
+      passed: aliasConfigured,
+      detail: aliasConfigured ? "Configured in .zshrc" : "Not found — run: source ~/.zshrc",
+      critical: true,
+    });
   }
-
-  checks.push({
-    name: "Shell alias (pai)",
-    passed: aliasConfigured,
-    detail: aliasConfigured
-      ? process.platform === "win32" ? "Configured in PowerShell profile" : "Configured in .zshrc"
-      : process.platform === "win32" ? "Not found — open a new PowerShell session" : "Not found — run: source ~/.zshrc",
-    critical: true,
-  });
 
   return checks;
 }

@@ -152,6 +152,31 @@ function tryExec(cmd: string, timeout = 30000): string | null {
   }
 }
 
+function getDefaultConfigDir(): string {
+  const home = homedir();
+  return process.platform === "win32"
+    ? join(home, ".claude", "config", "PAI")
+    : join(home, ".config", "PAI");
+}
+
+function createLinkOrCopy(targetPath: string, linkPath: string): void {
+  try {
+    if (existsSync(linkPath)) {
+      const stat = lstatSync(linkPath);
+      if (stat.isSymbolicLink()) unlinkSync(linkPath);
+      else return; // Don't overwrite regular files
+    }
+
+    if (process.platform === "win32") {
+      cpSync(targetPath, linkPath);
+    } else {
+      symlinkSync(targetPath, linkPath);
+    }
+  } catch {
+    // Non-fatal
+  }
+}
+
 // ─── User Context Migration (v2.5/v3.0 → v4.x) ─────────────────
 //
 // In v2.5–v3.0, user context (ABOUTME.md, TELOS/, CONTACTS.md, etc.)
@@ -231,10 +256,15 @@ async function migrateUserContext(
     try {
       rmSync(legacyDir, { recursive: true });
       // Symlink target is relative: from skills/PAI/ or skills/CORE/ → ../../PAI/USER
-      symlinkSync(join("..", "..", "PAI", "USER"), legacyDir);
-      await emit({ event: "message", content: `Replaced ${label} with symlink to PAI/USER.` });
+      if (process.platform === "win32") {
+        symlinkSync(newUserDir, legacyDir, "junction");
+        await emit({ event: "message", content: `Replaced ${label} with junction to PAI/USER.` });
+      } else {
+        symlinkSync(join("..", "..", "PAI", "USER"), legacyDir);
+        await emit({ event: "message", content: `Replaced ${label} with symlink to PAI/USER.` });
+      }
     } catch {
-      await emit({ event: "message", content: `Could not replace ${label} with symlink. User files were copied but old directory remains.` });
+      await emit({ event: "message", content: `Could not replace ${label} with link/junction. User files were copied but old directory remains.` });
     }
   }
 }
@@ -312,13 +342,15 @@ export async function runPrerequisites(
       } else {
         await emit({ event: "message", content: "Please install Git: xcode-select --install" });
       }
-    } else {
+    } else if (det.os.platform === "linux") {
       // Linux
       const pkgMgr = tryExec("which apt-get") ? "apt-get" : tryExec("which yum") ? "yum" : null;
       if (pkgMgr) {
         tryExec(`sudo ${pkgMgr} install -y git`, 120000);
         await emit({ event: "message", content: `Git installed via ${pkgMgr}.` });
       }
+    } else {
+      await emit({ event: "message", content: "Git not found. On Windows install Git from: https://git-scm.com/download/win" });
     }
   } else {
     await emit({ event: "progress", step: "prerequisites", percent: 20, detail: `Git found: v${det.tools.git.version}` });
@@ -352,11 +384,15 @@ export async function runPrerequisites(
   // Bun should already be installed by bootstrap script, but verify
   if (!det.tools.bun.installed) {
     await emit({ event: "progress", step: "prerequisites", percent: 40, detail: "Installing Bun..." });
-    const result = tryExec("curl -fsSL https://bun.sh/install | bash", 60000);
+    const result = process.platform === "win32"
+      ? tryExec('powershell -NoProfile -ExecutionPolicy Bypass -Command "irm bun.sh/install.ps1|iex"', 60000)
+      : tryExec("curl -fsSL https://bun.sh/install | bash", 60000);
     if (result !== null) {
       // Update PATH
-      const bunBin = join(homedir(), ".bun", "bin");
-      process.env.PATH = `${bunBin}:${process.env.PATH}`;
+      const bunBin = process.platform === "win32" ? join(homedir(), ".bun", "bin") : join(homedir(), ".bun", "bin");
+      process.env.PATH = process.platform === "win32"
+        ? `${bunBin};${process.env.PATH}`
+        : `${bunBin}:${process.env.PATH}`;
       await emit({ event: "message", content: "Bun installed successfully." });
       deduplicateBunShellEntries(); // Fix #954: clean up duplicate entries from retries
     }
@@ -542,7 +578,7 @@ export async function runRepository(
       } else {
         await emit({
           event: "message",
-          content: "Could not clone PAI repo automatically. You can clone it manually later: git clone https://github.com/danielmiessler/PAI.git ~/.claude",
+          content: `Could not clone PAI repo automatically. You can clone it manually later: git clone https://github.com/danielmiessler/PAI.git "${paiDir}"`,
         });
       }
     }
@@ -586,7 +622,7 @@ export async function runConfiguration(
 ): Promise<void> {
   await emit({ event: "step_start", step: "configuration" });
   const paiDir = state.detection?.paiDir || join(homedir(), ".claude");
-  const configDir = state.detection?.configDir || join(homedir(), ".config", "PAI");
+  const configDir = state.detection?.configDir || getDefaultConfigDir();
 
   // Generate settings.json
   await emit({ event: "progress", step: "configuration", percent: 20, detail: "Generating settings.json..." });
@@ -731,51 +767,49 @@ export async function runConfiguration(
       join(paiDir, ".env"),         // ~/.claude/.env
       join(homedir(), ".env"),      // ~/.env (voice server reads this)
     ];
-    for (const symlinkPath of symlinkPaths) {
-      try {
-        // Remove stale symlink or file before creating
-        if (existsSync(symlinkPath)) {
-          const stat = lstatSync(symlinkPath);
-          if (stat.isSymbolicLink()) {
-            unlinkSync(symlinkPath);
-          } else {
-            continue; // Don't overwrite a real file
-          }
-        }
-        symlinkSync(envPath, symlinkPath);
-      } catch {
-        // Permission error or path conflict
-      }
-    }
+    for (const symlinkPath of symlinkPaths) createLinkOrCopy(envPath, symlinkPath);
   }
 
-  // Set up shell alias (detect bash/zsh/fish)
+  // Set up shell alias/profile entry
   await emit({ event: "progress", step: "configuration", percent: 80, detail: "Setting up shell alias..." });
 
-  const userShell = process.env.SHELL || "/bin/zsh";
-  const rcFile = userShell.includes("bash") ? ".bashrc" : userShell.includes("fish") ? ".config/fish/config.fish" : ".zshrc";
-  const rcPath = join(homedir(), rcFile);
-  const aliasLine = `alias pai='bun ${join(paiDir, "PAI", "Tools", "pai.ts")}'`;
-  const marker = "# PAI alias";
-
-  if (existsSync(rcPath)) {
-    let content = readFileSync(rcPath, "utf-8");
-    // Remove any existing pai alias (old CORE or PAI paths, any marker variant)
-    content = content.replace(/^#\s*(?:PAI|CORE)\s*alias.*\n.*alias pai=.*\n?/gm, "");
-    content = content.replace(/^alias pai=.*\n?/gm, "");
-    // Add fresh alias
-    content = content.trimEnd() + `\n\n${marker}\n${aliasLine}\n`;
-    writeFileSync(rcPath, content);
+  if (process.platform === "win32") {
+    const profilePath = join(homedir(), "Documents", "PowerShell", "Microsoft.PowerShell_profile.ps1");
+    const profileDir = join(homedir(), "Documents", "PowerShell");
+    if (!existsSync(profileDir)) mkdirSync(profileDir, { recursive: true });
+    const marker = "# PAI alias";
+    const scriptPath = join(paiDir, "PAI", "Tools", "pai.ts").replace(/\\/g, "/");
+    const aliasLine = `function pai { bun \\\"${scriptPath}\\\" @args }`;
+    const existing = existsSync(profilePath) ? readFileSync(profilePath, "utf-8") : "";
+    const cleaned = existing
+      .replace(/^#\s*PAI alias[\s\S]*?function pai[^\n]*\n?/gm, "")
+      .replace(/^function pai[^\n]*\n?/gm, "");
+    writeFileSync(profilePath, `${cleaned.trimEnd()}\n\n${marker}\n${aliasLine}\n`);
   } else {
-    writeFileSync(rcPath, `${marker}\n${aliasLine}\n`);
+    const userShell = process.env.SHELL || "/bin/zsh";
+    const rcFile = userShell.includes("bash") ? ".bashrc" : userShell.includes("fish") ? ".config/fish/config.fish" : ".zshrc";
+    const rcPath = join(homedir(), rcFile);
+    const aliasLine = `alias pai='bun ${join(paiDir, "PAI", "Tools", "pai.ts")}'`;
+    const marker = "# PAI alias";
+    if (existsSync(rcPath)) {
+      let content = readFileSync(rcPath, "utf-8");
+      content = content.replace(/^#\s*(?:PAI|CORE)\s*alias.*\n.*alias pai=.*\n?/gm, "");
+      content = content.replace(/^alias pai=.*\n?/gm, "");
+      content = content.trimEnd() + `\n\n${marker}\n${aliasLine}\n`;
+      writeFileSync(rcPath, content);
+    } else {
+      writeFileSync(rcPath, `${marker}\n${aliasLine}\n`);
+    }
   }
 
   // Fix permissions
   await emit({ event: "progress", step: "configuration", percent: 90, detail: "Setting permissions..." });
-  try {
-    tryExec(`chmod -R 755 "${paiDir}"`, 10000);
-  } catch {
-    // Non-fatal
+  if (process.platform !== "win32") {
+    try {
+      tryExec(`chmod -R 755 "${paiDir}"`, 10000);
+    } catch {
+      // Non-fatal
+    }
   }
 
   await emit({ event: "progress", step: "configuration", percent: 100, detail: "Configuration complete" });
@@ -806,11 +840,15 @@ async function stopVoiceServer(emit: EngineEventHandler): Promise<void> {
   }
 
   // Kill the process LISTENING on port 8888 (not clients connected to it — that would kill us!)
-  tryExec(`lsof -ti:8888 -sTCP:LISTEN | xargs kill -9 2>/dev/null`, 5000);
+  if (process.platform === "win32") {
+    tryExec('for /f "tokens=5" %a in (\'netstat -ano ^| findstr :8888 ^| findstr LISTENING\') do taskkill /F /PID %a', 5000);
+  } else {
+    tryExec(`lsof -ti:8888 -sTCP:LISTEN | xargs kill -9 2>/dev/null`, 5000);
+  }
 
   // Unload existing LaunchAgent if present
   const plistPath = join(homedir(), "Library", "LaunchAgents", "com.pai.voice-server.plist");
-  if (existsSync(plistPath)) {
+  if (process.platform !== "win32" && existsSync(plistPath)) {
     tryExec(`launchctl unload "${plistPath}" 2>/dev/null`, 5000);
   }
 
@@ -826,9 +864,9 @@ async function stopVoiceServer(emit: EngineEventHandler): Promise<void> {
 
 async function startVoiceServer(paiDir: string, emit: EngineEventHandler): Promise<boolean> {
   const voiceServerDir = join(paiDir, "VoiceServer");
-  const stopScript = join(voiceServerDir, "stop.sh");
-  const installScript = join(voiceServerDir, "install.sh");
-  const startScript = join(voiceServerDir, "start.sh");
+  const stopScript = join(voiceServerDir, process.platform === "win32" ? "stop.ps1" : "stop.sh");
+  const installScript = join(voiceServerDir, process.platform === "win32" ? "install.ps1" : "install.sh");
+  const startScript = join(voiceServerDir, process.platform === "win32" ? "start.ps1" : "start.sh");
   const serverTs = join(voiceServerDir, "server.ts");
 
   // Check if VoiceServer directory exists
@@ -847,7 +885,9 @@ async function startVoiceServer(paiDir: string, emit: EngineEventHandler): Promi
   if (existsSync(installScript)) {
     try {
       const installOk = await new Promise<boolean>((resolve) => {
-        const child = spawn("bash", [installScript], {
+        const child = spawn(process.platform === "win32" ? "powershell" : "bash", process.platform === "win32"
+          ? ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", installScript]
+          : [installScript], {
           cwd: voiceServerDir,
           stdio: ["pipe", "pipe", "pipe"],
         });
@@ -877,7 +917,9 @@ async function startVoiceServer(paiDir: string, emit: EngineEventHandler): Promi
     await emit({ event: "progress", step: "voice", percent: 25, detail: "Starting voice server..." });
     try {
       await new Promise<void>((resolve) => {
-        const child = spawn("bash", [startScript], {
+        const child = spawn(process.platform === "win32" ? "powershell" : "bash", process.platform === "win32"
+          ? ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", startScript]
+          : [startScript], {
           cwd: voiceServerDir,
           stdio: "ignore",
         });
@@ -981,7 +1023,7 @@ export async function runVoiceSetup(
 
   const hasElevenLabsKey = !!state.collected.elevenLabsKey;
   if (!hasElevenLabsKey) {
-    await emit({ event: "message", content: "No ElevenLabs key — voice server will use macOS text-to-speech as fallback. You can add a key later in ~/.config/PAI/.env" });
+    await emit({ event: "message", content: `No ElevenLabs key — voice server will use local text-to-speech fallback. You can add a key later in ${join(getDefaultConfigDir(), ".env")}` });
   }
 
   // ── Start voice server (works with or without ElevenLabs key) ──
@@ -1085,7 +1127,7 @@ export async function runVoiceSetup(
 
   // ── Save ElevenLabs key to .env (if provided) ──
   if (hasElevenLabsKey) {
-    const configDir = state.detection?.configDir || join(homedir(), ".config", "PAI");
+    const configDir = state.detection?.configDir || getDefaultConfigDir();
     const envPath = join(configDir, ".env");
     if (!existsSync(configDir)) mkdirSync(configDir, { recursive: true });
 
@@ -1102,15 +1144,7 @@ export async function runVoiceSetup(
       join(paiDir, ".env"),
       join(homedir(), ".env"),
     ];
-    for (const sp of symlinkTargets) {
-      try {
-        if (existsSync(sp)) {
-          if (lstatSync(sp).isSymbolicLink()) unlinkSync(sp);
-          else continue;
-        }
-        symlinkSync(envPath, sp);
-      } catch { /* non-fatal */ }
-    }
+    for (const sp of symlinkTargets) createLinkOrCopy(envPath, sp);
   }
 
   // ── Test TTS and confirm with user ──

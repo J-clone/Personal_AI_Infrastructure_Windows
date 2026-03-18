@@ -26,7 +26,9 @@ async function checkVoiceServerHealth(): Promise<boolean> {
  */
 export async function runValidation(state: InstallState): Promise<ValidationCheck[]> {
   const paiDir = state.detection?.paiDir || join(homedir(), ".claude");
-  const configDir = state.detection?.configDir || join(homedir(), ".config", "PAI");
+  const configDir = state.detection?.configDir || (process.platform === "win32"
+    ? join(homedir(), ".claude", "config", "PAI")
+    : join(homedir(), ".config", "PAI"));
   const checks: ValidationCheck[] = [];
 
   // 1. settings.json exists and is valid JSON
@@ -167,20 +169,32 @@ export async function runValidation(state: InstallState): Promise<ValidationChec
     critical: false,
   });
 
-  // 8. Zsh alias configured
-  const zshrcPath = join(homedir(), ".zshrc");
+  // 8. Shell alias/profile configured
   let aliasConfigured = false;
-  if (existsSync(zshrcPath)) {
-    try {
-      const zshContent = readFileSync(zshrcPath, "utf-8");
-      aliasConfigured = zshContent.includes("# PAI alias") && zshContent.includes("alias pai=");
-    } catch {}
+  if (process.platform === "win32") {
+    const profilePath = join(homedir(), "Documents", "PowerShell", "Microsoft.PowerShell_profile.ps1");
+    if (existsSync(profilePath)) {
+      try {
+        const profile = readFileSync(profilePath, "utf-8");
+        aliasConfigured = profile.includes("# PAI alias") && profile.includes("function pai");
+      } catch {}
+    }
+  } else {
+    const zshrcPath = join(homedir(), ".zshrc");
+    if (existsSync(zshrcPath)) {
+      try {
+        const zshContent = readFileSync(zshrcPath, "utf-8");
+        aliasConfigured = zshContent.includes("# PAI alias") && zshContent.includes("alias pai=");
+      } catch {}
+    }
   }
 
   checks.push({
     name: "Shell alias (pai)",
     passed: aliasConfigured,
-    detail: aliasConfigured ? "Configured in .zshrc" : "Not found — run: source ~/.zshrc",
+    detail: aliasConfigured
+      ? process.platform === "win32" ? "Configured in PowerShell profile" : "Configured in .zshrc"
+      : process.platform === "win32" ? "Not found — open a new PowerShell session" : "Not found — run: source ~/.zshrc",
     critical: true,
   });
 

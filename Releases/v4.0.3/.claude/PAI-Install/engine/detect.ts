@@ -20,19 +20,33 @@ function tryExec(cmd: string): string | null {
   }
 }
 
+function commandExists(name: string): string | null {
+  if (process.platform === "win32") {
+    return tryExec(`where ${name}`)?.split(/\r?\n/)[0] || null;
+  }
+  return tryExec(`which ${name}`);
+}
+
 function detectOS(): DetectionResult["os"] {
-  const platform = process.platform === "darwin" ? "darwin" : "linux";
+  const platform = process.platform === "darwin"
+    ? "darwin"
+    : process.platform === "win32"
+      ? "win32"
+      : "linux";
   const arch = process.arch;
 
   let version = "";
   let name = "";
 
   if (platform === "darwin") {
-    const swVers = tryExec("sw_vers -productVersion");
-    version = swVers || "";
+    version = tryExec("sw_vers -productVersion") || "";
     name = `macOS ${version}`;
+  } else if (platform === "win32") {
+    version = tryExec('powershell -NoProfile -Command "(Get-CimInstance Win32_OperatingSystem).Version"') || "";
+    const caption = tryExec('powershell -NoProfile -Command "(Get-CimInstance Win32_OperatingSystem).Caption"') || "Windows";
+    name = caption;
   } else {
-    const release = tryExec("cat /etc/os-release 2>/dev/null | grep PRETTY_NAME | cut -d= -f2 | tr -d '\"'");
+    const release = tryExec("grep PRETTY_NAME /etc/os-release 2>/dev/null | cut -d= -f2");
     name = release || "Linux";
     version = tryExec("uname -r") || "";
   }
@@ -41,6 +55,12 @@ function detectOS(): DetectionResult["os"] {
 }
 
 function detectShell(): DetectionResult["shell"] {
+  if (process.platform === "win32") {
+    const shellPath = process.env.ComSpec || "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe";
+    const version = tryExec('powershell -NoProfile -Command "$PSVersionTable.PSVersion.ToString()"') || "";
+    return { name: "powershell", version, path: shellPath };
+  }
+
   const shellPath = process.env.SHELL || "/bin/sh";
   const shellName = shellPath.split("/").pop() || "sh";
   const version = tryExec(`${shellPath} --version 2>&1 | head -1`) || "";
@@ -52,11 +72,10 @@ function detectTool(
   name: string,
   versionCmd: string
 ): { installed: boolean; version?: string; path?: string } {
-  const path = tryExec(`which ${name}`);
+  const path = commandExists(name);
   if (!path) return { installed: false };
 
   const versionOutput = tryExec(versionCmd);
-  // Extract version number from output
   const versionMatch = versionOutput?.match(/(\d+\.\d+[\.\d]*)/);
   const version = versionMatch?.[1] || versionOutput || undefined;
 
@@ -75,7 +94,6 @@ function detectExisting(
     backupPaths: [],
   };
 
-  // Check for existing PAI installation
   const settingsPath = join(paiDir, "settings.json");
   if (existsSync(settingsPath)) {
     result.paiInstalled = true;
@@ -89,12 +107,10 @@ function detectExisting(
     }
   }
 
-  // Check for existing PAI skill
   if (existsSync(join(paiDir, "skills", "PAI", "SKILL.md"))) {
     result.paiInstalled = true;
   }
 
-  // Check for API keys in env file
   const envPath = join(configDir, ".env");
   if (existsSync(envPath)) {
     try {
@@ -106,7 +122,6 @@ function detectExisting(
     }
   }
 
-  // Check for backup directories
   const backupPatterns = [
     join(home, ".claude-backup"),
     join(home, ".claude-old"),
@@ -121,13 +136,12 @@ function detectExisting(
   return result;
 }
 
-/**
- * Run full system detection. Safe, read-only, non-destructive.
- */
 export function detectSystem(): DetectionResult {
   const home = homedir();
   const paiDir = join(home, ".claude");
-  const configDir = process.env.PAI_CONFIG_DIR || join(home, ".config", "PAI");
+  const configDir = process.env.PAI_CONFIG_DIR || (process.platform === "win32"
+    ? join(home, ".claude", "config", "PAI")
+    : join(home, ".config", "PAI"));
 
   return {
     os: detectOS(),
@@ -138,8 +152,8 @@ export function detectSystem(): DetectionResult {
       claude: detectTool("claude", "claude --version 2>&1"),
       node: detectTool("node", "node --version"),
       brew: {
-        installed: tryExec("which brew") !== null,
-        path: tryExec("which brew") || undefined,
+        installed: commandExists("brew") !== null,
+        path: commandExists("brew") || undefined,
       },
     },
     existing: detectExisting(home, paiDir, configDir),
@@ -150,13 +164,6 @@ export function detectSystem(): DetectionResult {
   };
 }
 
-/**
- * Validate an ElevenLabs API key.
- * Uses /v1/voices endpoint (requires only xi-api-key header, no specific scope)
- * instead of /v1/user (requires user_read permission, which many keys lack).
- * Also handles 401 with missing_permissions as "valid key, limited scope" —
- * TTS works fine with a known voice_id even without voices_read permission.
- */
 export async function validateElevenLabsKey(key: string): Promise<{ valid: boolean; error?: string }> {
   try {
     const res = await fetch("https://api.elevenlabs.io/v1/voices", {
@@ -166,15 +173,13 @@ export async function validateElevenLabsKey(key: string): Promise<{ valid: boole
 
     if (res.ok) return { valid: true };
 
-    // 401 with missing_permissions means the key IS valid but lacks a specific scope.
-    // TTS still works (doesn't need voices_read to use a known voice_id).
     if (res.status === 401) {
       try {
         const body = await res.json();
         if (body?.detail?.status === "missing_permissions") {
           return { valid: true };
         }
-      } catch { /* fall through to error */ }
+      } catch { }
     }
 
     return { valid: false, error: `HTTP ${res.status}` };

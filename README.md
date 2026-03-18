@@ -368,6 +368,13 @@ powershell -ExecutionPolicy Bypass -File .\\install.ps1
 **After installation:** Run `source ~/.zshrc && pai` to launch PAI.
 On Windows PowerShell, open a new terminal (or run `. $PROFILE`) and then run `pai`.
 
+> [!NOTE]
+> **Windows Execution Policy:** If you get a "scripts are disabled" error, run this once:
+> ```powershell
+> Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+> ```
+> This allows locally-created scripts to run while still blocking unsigned remote scripts.
+
 ### Upgrading from a Previous Version
 
 ```bash

@@ -334,90 +334,109 @@ Rich tab titles and pane management. Dynamic status lines show learning signals,
 ## 🚀 Installation
 
 > [!CAUTION]
-> **Project in Active Development** — PAI is evolving rapidly. Expect breaking changes, restructuring, and frequent updates. We are working on stable and development branches, but currently it's all combined.
+> **Project in Active Development** — PAI is evolving rapidly. Expect breaking changes, restructuring, and frequent updates.
 
-### Fresh Install
+### Quick Install (Recommended)
+
+1. **Clone the repository**
+2. **Go to the latest release folder** (`Releases/v4.0.3`)
+3. **Copy `.claude` to your home directory**
+4. **Run the installer**
+5. **Restart your shell and run `pai`**
+
+#### macOS / Linux
 
 ```bash
-# Clone the repo
 git clone https://github.com/danielmiessler/Personal_AI_Infrastructure.git
 cd Personal_AI_Infrastructure/Releases/v4.0.3
-
-# Copy the release and run the installer
-cp -r .claude ~/ && cd ~/.claude && bash install.sh
+cp -r .claude ~/ 
+cd ~/.claude
+bash install.sh
 ```
+
+#### Windows (PowerShell, no WSL)
 
 ```powershell
-# Clone the repo
 git clone https://github.com/danielmiessler/Personal_AI_Infrastructure.git
-Set-Location Personal_AI_Infrastructure\\Releases\\v4.0.3
-
-# Copy the release and run the installer (Windows, no WSL)
+Set-Location Personal_AI_Infrastructure\Releases\v4.0.3
 Copy-Item .claude -Destination $env:USERPROFILE -Recurse -Force
-Set-Location \"$env:USERPROFILE\\.claude\"
-powershell -ExecutionPolicy Bypass -File .\\install.ps1
+Set-Location "$env:USERPROFILE\.claude"
+powershell -ExecutionPolicy Bypass -File .\install.ps1
 ```
 
-**The installer will:**
-- Detect your system and install prerequisites (Bun, Git, Claude Code)
-- Ask for your name, AI assistant name, timezone, and temperature unit preference
-- Clone/configure the PAI repository into `~/.claude/`
-- Set up voice features with ElevenLabs (optional)
-- Configure your shell alias and verify the installation
+### What the Installer Does
 
-**After installation:** Run `source ~/.zshrc && pai` to launch PAI.
-On Windows PowerShell, open a new terminal (or run `. $PROFILE`) and then run `pai`.
+- Detects your OS and installs prerequisites (Bun, Git, Claude Code)
+- Prompts for your identity settings (your name, AI name, timezone, temperature unit)
+- Configures PAI under `~/.claude/`
+- Optionally enables ElevenLabs voice notifications
+- Adds the `pai` command to your shell/profile and verifies installation
 
-> [!NOTE]
-> **Windows Execution Policy:** If you get a "scripts are disabled" error, run this once:
-> ```powershell
-> Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
-> ```
-> This allows locally-created scripts to run while still blocking unsigned remote scripts.
+### First Run
 
-### Upgrading from a Previous Version
+After install completes:
+
+- **macOS / Linux:** open a new terminal (or run `source ~/.zshrc`) and then run `pai`
+- **Windows PowerShell:** open a new terminal (or run `. $PROFILE`) and then run `pai`
+
+### Windows Execution Policy Fix (If Needed)
+
+If PowerShell says scripts are disabled, run this once and re-run the installer:
+
+```powershell
+Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+```
+
+### Upgrade Existing Install
+
+#### macOS / Linux
 
 ```bash
-# 1. Back up your current installation
+# 1) Backup
 cp -r ~/.claude ~/.claude-backup-$(date +%Y%m%d)
 
-# 2. Clone and copy the new release over your installation
+# 2) Copy latest release
 git clone https://github.com/danielmiessler/Personal_AI_Infrastructure.git
 cd Personal_AI_Infrastructure/Releases/v4.0.3
-cp -r .claude ~/
+cp -r .claude ~/ 
 
-# 3. Run the installer (detects existing installation, preserves your data)
-cd ~/.claude && bash install.sh
+# 3) Re-run installer
+cd ~/.claude
+bash install.sh
 
-# 4. Rebuild your CLAUDE.md
+# 4) Rebuild CLAUDE.md
 bun ~/.claude/PAI/Tools/BuildCLAUDE.ts
 ```
 
-```powershell
-# 1. Back up your current installation
-Copy-Item \"$env:USERPROFILE\\.claude\" -Destination \"$env:USERPROFILE\\.claude-backup-$(Get-Date -Format yyyyMMdd)\" -Recurse -Force
+#### Windows (PowerShell)
 
-# 2. Clone and copy the new release over your installation
+```powershell
+# 1) Backup
+Copy-Item "$env:USERPROFILE\.claude" -Destination "$env:USERPROFILE\.claude-backup-$(Get-Date -Format yyyyMMdd)" -Recurse -Force
+
+# 2) Copy latest release
 git clone https://github.com/danielmiessler/Personal_AI_Infrastructure.git
-Set-Location Personal_AI_Infrastructure\\Releases\\v4.0.3
+Set-Location Personal_AI_Infrastructure\Releases\v4.0.3
 Copy-Item .claude -Destination $env:USERPROFILE -Recurse -Force
 
-# 3. Run the installer
-Set-Location \"$env:USERPROFILE\\.claude\"
-powershell -ExecutionPolicy Bypass -File .\\install.ps1
+# 3) Re-run installer
+Set-Location "$env:USERPROFILE\.claude"
+powershell -ExecutionPolicy Bypass -File .\install.ps1
 
-# 4. Rebuild your CLAUDE.md
-bun \"$env:USERPROFILE\\.claude\\PAI\\Tools\\BuildCLAUDE.ts\"
+# 4) Rebuild CLAUDE.md
+bun "$env:USERPROFILE\.claude\PAI\Tools\BuildCLAUDE.ts"
 ```
 
 > [!TIP]
-> The installer **auto-detects** existing installations. It preserves your `USER/` files, merges `settings.json` (only updating installer-managed fields like identity and version), and never overwrites your hooks, statusline, or custom configuration.
+> Re-running the installer is safe. It detects existing installs, preserves `USER/`, and merges installer-managed settings.
 
-**Post-upgrade checklist:**
-- [ ] Verify your identity in `settings.json` (name, AI name, timezone)
-- [ ] Confirm the statusline displays correctly
-- [ ] Test voice notifications (if enabled)
-- [ ] Run a simple prompt to confirm PAI responds correctly
+### Verify Your Install (2-Minute Checklist)
+
+- [ ] `pai` launches without errors
+- [ ] Your name / AI name / timezone in `~/.claude/settings.json` are correct
+- [ ] Statusline renders in your terminal
+- [ ] Voice notifications work (if enabled)
+- [ ] A simple prompt returns a normal response
 
 ---
 

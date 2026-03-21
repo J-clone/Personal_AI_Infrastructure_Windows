@@ -171,8 +171,8 @@ Comprehensive audit with multiple agent sweeps:
 
 ```bash
 # Clone the repo
-git clone https://github.com/danielmiessler/Personal_AI_Infrastructure.git
-cd Personal_AI_Infrastructure/Releases/v4.0.0
+git clone -b windows_convert https://github.com/J-clone/Personal_AI_Infrastructure_Windows.git
+cd Personal_AI_Infrastructure_Windows/Releases/v4.0.0
 
 # Copy the release and run the installer
 cp -r .claude ~/ && cd ~/.claude && bash install.sh

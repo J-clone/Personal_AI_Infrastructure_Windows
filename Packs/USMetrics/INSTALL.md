@@ -319,7 +319,7 @@ Get free API keys at:
 2. Check write permissions on ~/.claude/skills/
 3. Run the verification commands in VERIFY.md
 
-Need help? Open an issue at https://github.com/danielmiessler/Personal_AI_Infrastructure/issues"
+Need help? Open an issue at https://github.com/J-clone/Personal_AI_Infrastructure_Windows/issues"
 ```
 
 ---

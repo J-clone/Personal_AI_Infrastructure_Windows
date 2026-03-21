@@ -107,7 +107,7 @@ Tell the user what you found:
 [If MEMORY not found]: Note: Context Search searches PAI's MEMORY directories
 for prior work sessions. Without PAI installed, the command will still work but
 will only search git history. For full functionality, consider installing PAI:
-https://github.com/danielmiessler/Personal_AI_Infrastructure"
+https://github.com/J-clone/Personal_AI_Infrastructure_Windows"
 ```
 
 ---
@@ -351,7 +351,7 @@ The commands are ready, but PAI's MEMORY system isn't installed yet.
 Right now, the commands will search git history only.
 
 For full functionality (PRD search, session registry, work directories), install PAI:
-https://github.com/danielmiessler/Personal_AI_Infrastructure
+https://github.com/J-clone/Personal_AI_Infrastructure_Windows
 
 Try it now: /cs [any topic]"
 ```
@@ -365,7 +365,7 @@ Try it now: /cs [any topic]"
 2. Check write permissions on ~/.claude/commands/
 3. Run the verification commands in VERIFY.md
 
-Need help? Open an issue at https://github.com/danielmiessler/Personal_AI_Infrastructure/issues"
+Need help? Open an issue at https://github.com/J-clone/Personal_AI_Infrastructure_Windows/issues"
 ```
 
 ---
@@ -379,7 +379,7 @@ Restart Claude Code. Custom commands from `~/.claude/commands/` are loaded at se
 ### "No prior work found" for everything
 
 This is expected if PAI's MEMORY system isn't installed. The command searches PAI-specific directories. Options:
-1. Install PAI for full work tracking: https://github.com/danielmiessler/Personal_AI_Infrastructure
+1. Install PAI for full work tracking: https://github.com/J-clone/Personal_AI_Infrastructure_Windows
 2. The command will still search git history if `~/.claude/` is a git repo
 
 ### Command works but results are sparse

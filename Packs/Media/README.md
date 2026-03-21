@@ -54,7 +54,7 @@ All generated media goes to `~/Downloads/` first for preview before final placem
 
 This pack is designed for AI-assisted installation. Give this directory to your AI and ask it to install using `INSTALL.md`.
 
-**What is PAI?** See the [PAI Project Overview](https://github.com/danielmiessler/Personal_AI_Infrastructure#what-is-pai).
+**What is PAI?** See the [PAI Project Overview](https://github.com/J-clone/Personal_AI_Infrastructure_Windows#what-is-pai).
 
 ---
 
@@ -201,7 +201,7 @@ Create `~/.claude/PAI/USER/SKILLCUSTOMIZATIONS/Art/PREFERENCES.md` to define:
 
 ## Credits
 
-- **Original concept:** Daniel Miessler -- developed as part of the [PAI](https://github.com/danielmiessler/Personal_AI_Infrastructure) system
+- **Original concept:** Daniel Miessler -- developed as part of the [PAI](https://github.com/J-clone/Personal_AI_Infrastructure_Windows) system
 - **Inspired by:** The need for inline visual content creation without leaving the AI workflow
 
 ---

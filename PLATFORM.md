@@ -2,7 +2,7 @@
 
 This document tracks all platform-specific code and dependencies across PAI, providing a roadmap for cross-platform support.
 
-**Last Updated:** 2026-01-01
+**Last Updated:** 2026-03-18
 **Maintainer:** Community contributions welcome
 
 ---
@@ -13,7 +13,7 @@ This document tracks all platform-specific code and dependencies across PAI, pro
 |----------|--------|-------|
 | **macOS** | ✅ Fully Supported | Primary development platform |
 | **Linux** | ✅ Fully Supported | Ubuntu/Debian tested, other distros via community |
-| **Windows** | ❌ Not Supported | Community contributions welcome |
+| **Windows** | ✅ Supported | PowerShell 5.1+, Windows 10/11, native .ps1 scripts |
 
 ---
 
@@ -114,22 +114,21 @@ This document tracks all platform-specific code and dependencies across PAI, pro
 
 ---
 
-### ❌ UNSUPPORTED (Windows - Community Contributions Welcome)
+### ✅ IMPLEMENTED (Windows — PowerShell Native Support)
 
-22. ❌ Windows support entirely absent
-    - **Audio:** No Windows Media Player integration
-    - **Notifications:** No Windows Toast notifications
-    - **Auto-start:** No Task Scheduler implementation
-    - **Shell scripts:** Assume bash (not cmd/PowerShell)
-    - **Priority:** Medium - depends on community interest
+22. ✅ Windows support added via PowerShell conversion
+    - **Shell scripts:** All .sh scripts have .ps1 equivalents using native PowerShell
+    - **Auto-start:** Windows Task Scheduler via `Register-ScheduledTask` (replaces launchctl)
+    - **JSON parsing:** `ConvertFrom-Json` (no jq dependency required)
+    - **Paths:** `$env:USERPROFILE`, `Join-Path` throughout (no `~/` or `$HOME`)
+    - **Installer:** TypeScript engine detects `win32`, uses `winget` and `irm bun.sh/install.ps1 | iex`
+    - **Statusline:** Full PowerShell port using `Invoke-RestMethod`, `Get-ChildItem`, native ANSI
+    - **Symlinks:** NTFS junctions (`mklink /J`) with `cpSync` fallback for non-admin users
 
-**How to Contribute Windows Support:**
-1. Add Windows audio playback (Windows Media Player, ffplay, or native APIs)
-2. Implement Windows Toast notifications
-3. Create Task Scheduler auto-start alternative
-4. Convert bash scripts to cross-platform Bun/TypeScript
-5. Test on Windows 10/11
-6. Submit PR following PAI contribution guidelines
+**Remaining Windows future work:**
+1. Windows system tray indicator (SwiftBar/BitBar equivalent — deferred)
+2. Windows Toast notification integration (currently skipped)
+3. Extended testing on older Windows 10 builds
 
 ---
 
@@ -151,13 +150,24 @@ fi
 
 ```typescript
 // TypeScript/Bun code
+const IS_WINDOWS = process.platform === "win32";
 if (process.platform === 'darwin') {
   // macOS-specific code
 } else if (process.platform === 'linux') {
   // Linux-specific code
-} else if (process.platform === 'win32') {
-  // Windows-specific code (future)
+} else if (IS_WINDOWS) {
+  // Windows-specific code
 }
+```
+
+```powershell
+# PowerShell scripts (Windows)
+$ErrorActionPreference = "Stop"
+$PAI_DIR = if ($env:PAI_DIR) { $env:PAI_DIR } else { Join-Path $env:USERPROFILE ".claude" }
+# Use ConvertFrom-Json instead of jq
+$settings = Get-Content (Join-Path $PAI_DIR "settings.json") -Raw | ConvertFrom-Json
+# Use Invoke-RestMethod instead of curl
+$response = Invoke-RestMethod -Uri $url -TimeoutSec 2 -ErrorAction SilentlyContinue
 ```
 
 **Anti-patterns to avoid:**
@@ -182,21 +192,21 @@ Contributors fixing platform issues should:
 - macOS: Tested by Daniel Miessler
 - Linux (Ubuntu/WSL2): Tested by contributors
 - Linux (other distros): Community testing
-- Windows: Untested
+- Windows: PowerShell scripts validated via `test-windows-install.ps1`
 
 ---
 
 ## Future Work
 
 **High Priority:**
-- Windows audio playback support
-- Windows notification support
-- Windows auto-start mechanism
+- Windows system tray indicator (SwiftBar/BitBar equivalent)
+- Windows Toast notification integration
 
 **Medium Priority:**
 - Test on non-Ubuntu Linux distros (Fedora, Arch, etc.)
 - Improve error messages for missing dependencies
 - Add platform compatibility checks to installation
+- Extended testing on older Windows 10 builds
 
 **Low Priority:**
 - Support for alternative package managers
@@ -241,6 +251,7 @@ When contributing platform fixes:
 - Daniel Miessler - Original PAI implementation (macOS focus)
 - PR #285 - Google Cloud TTS provider, Linux audio support
 - PR #XXX - Linux compatibility fixes (sed, PATH, systemd)
+- PR #1 - Windows PowerShell native support (all scripts, TypeScript engine, Task Scheduler)
 - Community contributors - Testing and bug reports
 
 Want your name here? Contribute a platform fix!

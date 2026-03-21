@@ -63,7 +63,7 @@ Every URL in every research output is verified before delivery. Research artifac
 
 This pack is designed for AI-assisted installation. Give this directory to your AI and ask it to install using `INSTALL.md`.
 
-**What is PAI?** See the [PAI Project Overview](https://github.com/danielmiessler/Personal_AI_Infrastructure#what-is-pai).
+**What is PAI?** See the [PAI Project Overview](https://github.com/J-clone/Personal_AI_Infrastructure_Windows#what-is-pai).
 
 ---
 
@@ -220,7 +220,7 @@ Create `~/.claude/PAI/USER/SKILLCUSTOMIZATIONS/Research/PREFERENCES.md` to defin
 
 ## Credits
 
-- **Original concept:** Daniel Miessler -- developed as part of the [PAI](https://github.com/danielmiessler/Personal_AI_Infrastructure) system
+- **Original concept:** Daniel Miessler -- developed as part of the [PAI](https://github.com/J-clone/Personal_AI_Infrastructure_Windows) system
 - **Fabric integration:** Daniel Miessler -- creator of [Fabric](https://github.com/danielmiessler/fabric), the 242+ pattern library
 - **Inspired by:** The gap between asking a question and getting genuinely thorough, verified research
 

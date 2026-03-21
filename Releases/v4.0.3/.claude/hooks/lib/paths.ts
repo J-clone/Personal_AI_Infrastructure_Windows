@@ -14,15 +14,17 @@ import { join } from 'path';
 
 /**
  * Expand shell variables in a path string
- * Supports: $HOME, ${HOME}, ~
+ * Supports: $HOME, ${HOME}, ~, $env:USERPROFILE, %USERPROFILE%
  */
 export function expandPath(path: string): string {
   const home = homedir();
 
   return path
-    .replace(/^\$HOME(?=\/|$)/, home)
-    .replace(/^\$\{HOME\}(?=\/|$)/, home)
-    .replace(/^~(?=\/|$)/, home);
+    .replace(/^\$HOME(?=[\/\\]|$)/, home)
+    .replace(/^\$\{HOME\}(?=[\/\\]|$)/, home)
+    .replace(/^~(?=[\/\\]|$)/, home)
+    .replace(/^\$env:USERPROFILE(?=[\/\\]|$)/i, home)
+    .replace(/^%USERPROFILE%(?=[\/\\]|$)/i, home);
 }
 
 /**

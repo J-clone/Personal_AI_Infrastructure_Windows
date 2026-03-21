@@ -11,31 +11,31 @@
 
 # Personal AI Infrastructure
 
-[![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&weight=500&size=24&pause=1000&color=60A5FA&center=true&vCenter=true&width=600&lines=Everyone+needs+access+to+the+best+AI.;AI+should+magnify+everyone.;Your+personal+AI+stack.)](https://github.com/danielmiessler/Personal_AI_Infrastructure)
+[![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&weight=500&size=24&pause=1000&color=60A5FA&center=true&vCenter=true&width=600&lines=Everyone+needs+access+to+the+best+AI.;AI+should+magnify+everyone.;Your+personal+AI+stack.)](https://github.com/J-clone/Personal_AI_Infrastructure_Windows)
 
 <br/>
 
 <!-- Social Proof -->
-![Stars](https://img.shields.io/github/stars/danielmiessler/Personal_AI_Infrastructure?style=social)
-![Forks](https://img.shields.io/github/forks/danielmiessler/Personal_AI_Infrastructure?style=social)
-![Watchers](https://img.shields.io/github/watchers/danielmiessler/Personal_AI_Infrastructure?style=social)
+![Stars](https://img.shields.io/github/stars/J-clone/Personal_AI_Infrastructure_Windows?style=social)
+![Forks](https://img.shields.io/github/forks/J-clone/Personal_AI_Infrastructure_Windows?style=social)
+![Watchers](https://img.shields.io/github/watchers/J-clone/Personal_AI_Infrastructure_Windows?style=social)
 
 <!-- Project Health -->
-![Release](https://img.shields.io/github/v/release/danielmiessler/Personal_AI_Infrastructure?style=flat&logo=github&color=8B5CF6)
-![Last Commit](https://img.shields.io/github/last-commit/danielmiessler/Personal_AI_Infrastructure?style=flat&logo=git&color=22C55E)
-![Open Issues](https://img.shields.io/github/issues/danielmiessler/Personal_AI_Infrastructure?style=flat&logo=github&color=F97316)
-![Open PRs](https://img.shields.io/github/issues-pr/danielmiessler/Personal_AI_Infrastructure?style=flat&logo=github&color=EC4899)
-![License](https://img.shields.io/github/license/danielmiessler/Personal_AI_Infrastructure?style=flat&color=60A5FA)
+![Release](https://img.shields.io/github/v/release/J-clone/Personal_AI_Infrastructure_Windows?style=flat&logo=github&color=8B5CF6)
+![Last Commit](https://img.shields.io/github/last-commit/J-clone/Personal_AI_Infrastructure_Windows?style=flat&logo=git&color=22C55E)
+![Open Issues](https://img.shields.io/github/issues/J-clone/Personal_AI_Infrastructure_Windows?style=flat&logo=github&color=F97316)
+![Open PRs](https://img.shields.io/github/issues-pr/J-clone/Personal_AI_Infrastructure_Windows?style=flat&logo=github&color=EC4899)
+![License](https://img.shields.io/github/license/J-clone/Personal_AI_Infrastructure_Windows?style=flat&color=60A5FA)
 
 <!-- Metrics -->
-![Discussions](https://img.shields.io/github/discussions/danielmiessler/Personal_AI_Infrastructure?style=flat&logo=github&label=Discussions&color=EAB308)
-![Commit Activity](https://img.shields.io/github/commit-activity/m/danielmiessler/Personal_AI_Infrastructure?style=flat&logo=git&label=Commits%2Fmo&color=F59E0B)
-![Repo Size](https://img.shields.io/github/repo-size/danielmiessler/Personal_AI_Infrastructure?style=flat&logo=database&label=Repo%20Size&color=D97706)
+![Discussions](https://img.shields.io/github/discussions/J-clone/Personal_AI_Infrastructure_Windows?style=flat&logo=github&label=Discussions&color=EAB308)
+![Commit Activity](https://img.shields.io/github/commit-activity/m/J-clone/Personal_AI_Infrastructure_Windows?style=flat&logo=git&label=Commits%2Fmo&color=F59E0B)
+![Repo Size](https://img.shields.io/github/repo-size/J-clone/Personal_AI_Infrastructure_Windows?style=flat&logo=database&label=Repo%20Size&color=D97706)
 
 <!-- Content -->
 [![Get Started](https://img.shields.io/badge/🚀_Get_Started-Install-22C55E?style=flat)](#-installation)
 [![Release v4.0.3](https://img.shields.io/badge/📦_Release-v4.0.3-8B5CF6?style=flat)](Releases/v4.0.3/)
-[![Contributors](https://img.shields.io/github/contributors/danielmiessler/Personal_AI_Infrastructure?style=flat&logo=githubsponsors&logoColor=white&label=Contributors&color=EC4899)](https://github.com/danielmiessler/Personal_AI_Infrastructure/graphs/contributors)
+[![Contributors](https://img.shields.io/github/contributors/J-clone/Personal_AI_Infrastructure_Windows?style=flat&logo=githubsponsors&logoColor=white&label=Contributors&color=EC4899)](https://github.com/J-clone/Personal_AI_Infrastructure_Windows/graphs/contributors)
 
 <!-- Tech Stack -->
 [![Built with Claude](https://img.shields.io/badge/Built_with-Claude-D4A574?style=flat&logo=anthropic&logoColor=white)](https://claude.ai)
@@ -334,54 +334,109 @@ Rich tab titles and pane management. Dynamic status lines show learning signals,
 ## 🚀 Installation
 
 > [!CAUTION]
-> **Project in Active Development** — PAI is evolving rapidly. Expect breaking changes, restructuring, and frequent updates. We are working on stable and development branches, but currently it's all combined.
+> **Project in Active Development** — PAI is evolving rapidly. Expect breaking changes, restructuring, and frequent updates.
 
-### Fresh Install
+### Quick Install (Recommended)
+
+1. **Clone the repository**
+2. **Go to the latest release folder** (`Releases/v4.0.3`)
+3. **Copy `.claude` to your home directory**
+4. **Run the installer**
+5. **Restart your shell and run `pai`**
+
+#### macOS / Linux
 
 ```bash
-# Clone the repo
-git clone https://github.com/danielmiessler/Personal_AI_Infrastructure.git
-cd Personal_AI_Infrastructure/Releases/v4.0.3
-
-# Copy the release and run the installer
-cp -r .claude ~/ && cd ~/.claude && bash install.sh
+git clone -b windows_convert https://github.com/J-clone/Personal_AI_Infrastructure_Windows.git
+cd Personal_AI_Infrastructure_Windows/Releases/v4.0.3
+cp -r .claude ~/ 
+cd ~/.claude
+bash install.sh
 ```
 
-**The installer will:**
-- Detect your system and install prerequisites (Bun, Git, Claude Code)
-- Ask for your name, AI assistant name, timezone, and temperature unit preference
-- Clone/configure the PAI repository into `~/.claude/`
-- Set up voice features with ElevenLabs (optional)
-- Configure your shell alias and verify the installation
+#### Windows (PowerShell, no WSL)
 
-**After installation:** Run `source ~/.zshrc && pai` to launch PAI.
+```powershell
+git clone -b windows_convert https://github.com/J-clone/Personal_AI_Infrastructure_Windows.git
+Set-Location Personal_AI_Infrastructure_Windows\Releases\v4.0.3
+Copy-Item .claude -Destination $env:USERPROFILE -Recurse -Force
+Set-Location "$env:USERPROFILE\.claude"
+powershell -ExecutionPolicy Bypass -File .\install.ps1
+```
 
-### Upgrading from a Previous Version
+### What the Installer Does
+
+- Detects your OS and installs prerequisites (Bun, Git, Claude Code)
+- Prompts for your identity settings (your name, AI name, timezone, temperature unit)
+- Configures PAI under `~/.claude/`
+- Optionally enables ElevenLabs voice notifications
+- Adds the `pai` command to your shell/profile and verifies installation
+
+### First Run
+
+After install completes:
+
+- **macOS / Linux:** open a new terminal (or run `source ~/.zshrc`) and then run `pai`
+- **Windows PowerShell:** open a new terminal (or run `. $PROFILE`) and then run `pai`
+
+### Windows Execution Policy Fix (If Needed)
+
+If PowerShell says scripts are disabled, run this once and re-run the installer:
+
+```powershell
+Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+```
+
+### Upgrade Existing Install
+
+#### macOS / Linux
 
 ```bash
-# 1. Back up your current installation
+# 1) Backup
 cp -r ~/.claude ~/.claude-backup-$(date +%Y%m%d)
 
-# 2. Clone and copy the new release over your installation
-git clone https://github.com/danielmiessler/Personal_AI_Infrastructure.git
-cd Personal_AI_Infrastructure/Releases/v4.0.3
-cp -r .claude ~/
+# 2) Copy latest release
+git clone -b windows_convert https://github.com/J-clone/Personal_AI_Infrastructure_Windows.git
+cd Personal_AI_Infrastructure_Windows/Releases/v4.0.3
+cp -r .claude ~/ 
 
-# 3. Run the installer (detects existing installation, preserves your data)
-cd ~/.claude && bash install.sh
+# 3) Re-run installer
+cd ~/.claude
+bash install.sh
 
-# 4. Rebuild your CLAUDE.md
+# 4) Rebuild CLAUDE.md
 bun ~/.claude/PAI/Tools/BuildCLAUDE.ts
 ```
 
-> [!TIP]
-> The installer **auto-detects** existing installations. It preserves your `USER/` files, merges `settings.json` (only updating installer-managed fields like identity and version), and never overwrites your hooks, statusline, or custom configuration.
+#### Windows (PowerShell)
 
-**Post-upgrade checklist:**
-- [ ] Verify your identity in `settings.json` (name, AI name, timezone)
-- [ ] Confirm the statusline displays correctly
-- [ ] Test voice notifications (if enabled)
-- [ ] Run a simple prompt to confirm PAI responds correctly
+```powershell
+# 1) Backup
+Copy-Item "$env:USERPROFILE\.claude" -Destination "$env:USERPROFILE\.claude-backup-$(Get-Date -Format yyyyMMdd)" -Recurse -Force
+
+# 2) Copy latest release
+git clone -b windows_convert https://github.com/J-clone/Personal_AI_Infrastructure_Windows.git
+Set-Location Personal_AI_Infrastructure_Windows\Releases\v4.0.3
+Copy-Item .claude -Destination $env:USERPROFILE -Recurse -Force
+
+# 3) Re-run installer
+Set-Location "$env:USERPROFILE\.claude"
+powershell -ExecutionPolicy Bypass -File .\install.ps1
+
+# 4) Rebuild CLAUDE.md
+bun "$env:USERPROFILE\.claude\PAI\Tools\BuildCLAUDE.ts"
+```
+
+> [!TIP]
+> Re-running the installer is safe. It detects existing installs, preserves `USER/`, and merges installer-managed settings.
+
+### Verify Your Install (2-Minute Checklist)
+
+- [ ] `pai` launches without errors
+- [ ] Your name / AI name / timezone in `~/.claude/settings.json` are correct
+- [ ] Statusline renders in your terminal
+- [ ] Voice notifications work (if enabled)
+- [ ] A simple prompt returns a normal response
 
 ---
 
@@ -482,7 +537,7 @@ Recovery is straightforward:
 
 ## 🌐 Community
 
-**GitHub Discussions:** [Join the conversation](https://github.com/danielmiessler/Personal_AI_Infrastructure/discussions)
+**GitHub Discussions:** [Join the conversation](https://github.com/J-clone/Personal_AI_Infrastructure_Windows/discussions)
 
 **Community Discord:** PAI is discussed in the [community Discord](https://danielmiessler.com/upgrade) along with other AI projects
 
@@ -492,11 +547,11 @@ Recovery is straightforward:
 
 ### Star History
 
-<a href="https://star-history.com/#danielmiessler/Personal_AI_Infrastructure&Date">
+<a href="https://star-history.com/#J-clone/Personal_AI_Infrastructure_Windows&Date">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=danielmiessler/Personal_AI_Infrastructure&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=danielmiessler/Personal_AI_Infrastructure&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=danielmiessler/Personal_AI_Infrastructure&type=Date" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=J-clone/Personal_AI_Infrastructure_Windows&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=J-clone/Personal_AI_Infrastructure_Windows&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=J-clone/Personal_AI_Infrastructure_Windows&type=Date" />
  </picture>
 </a>
 
@@ -504,7 +559,7 @@ Recovery is straightforward:
 
 ## 🤝 Contributing
 
-We welcome contributions! See our [GitHub Issues](https://github.com/danielmiessler/Personal_AI_Infrastructure/issues) for open tasks.
+We welcome contributions! See our [GitHub Issues](https://github.com/J-clone/Personal_AI_Infrastructure_Windows/issues) for open tasks.
 
 1. **Fork the repository**
 2. **Make your changes** — Bug fixes, new skills, documentation improvements

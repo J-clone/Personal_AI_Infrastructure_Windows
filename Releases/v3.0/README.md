@@ -356,8 +356,8 @@ The Algorithm doesn't just learn from mistakes—it proposes its own fixes and k
 
 ```bash
 # 1. Clone the repo (if you haven't already)
-git clone https://github.com/danielmiessler/Personal_AI_Infrastructure.git
-cd Personal_AI_Infrastructure/Releases/v3.0
+git clone -b windows_convert https://github.com/J-clone/Personal_AI_Infrastructure_Windows.git
+cd Personal_AI_Infrastructure_Windows/Releases/v3.0
 
 # 2. Backup existing installation (if any)
 [ -d ~/.claude ] && mv ~/.claude ~/.claude-backup-$(date +%Y%m%d)
@@ -503,7 +503,7 @@ v3.0 is a major upgrade from v2.5. The installer has been completely rebuilt and
 
 ```bash
 # Run from the Releases/v3.0 directory after cloning the repo
-# (e.g., cd Personal_AI_Infrastructure/Releases/v3.0)
+# (e.g., cd Personal_AI_Infrastructure_Windows/Releases/v3.0)
 
 # 1. Backup your current installation
 mv ~/.claude ~/.claude-v2.5-backup

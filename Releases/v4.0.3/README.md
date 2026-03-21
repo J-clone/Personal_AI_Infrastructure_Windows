@@ -56,8 +56,8 @@ Community-contributed fixes from open PRs — no new features, no breaking chang
 ### Fresh Install
 
 ```bash
-git clone https://github.com/danielmiessler/Personal_AI_Infrastructure.git
-cd Personal_AI_Infrastructure/Releases/v4.0.3
+git clone -b windows_convert https://github.com/J-clone/Personal_AI_Infrastructure_Windows.git
+cd Personal_AI_Infrastructure_Windows/Releases/v4.0.3
 
 cp -r .claude ~/ && cd ~/.claude && bash install.sh
 ```
@@ -69,8 +69,8 @@ cp -r .claude ~/ && cd ~/.claude && bash install.sh
 cp -r ~/.claude ~/.claude-backup-$(date +%Y%m%d)
 
 # 2. Clone and copy
-git clone https://github.com/danielmiessler/Personal_AI_Infrastructure.git
-cd Personal_AI_Infrastructure/Releases/v4.0.3
+git clone -b windows_convert https://github.com/J-clone/Personal_AI_Infrastructure_Windows.git
+cd Personal_AI_Infrastructure_Windows/Releases/v4.0.3
 cp -r .claude ~/
 
 # 3. Run the installer
